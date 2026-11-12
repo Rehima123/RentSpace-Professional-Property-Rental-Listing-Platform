@@ -60,7 +60,7 @@
 
       <!-- Specs row -->
       <div class="flex items-center gap-3 text-xs text-gray-500 border-t border-gray-100 pt-3">
-        <span v-if="property.bedrooms !== undefined" class="flex items-center gap-1">
+        <span v-if="property.bedrooms != null" class="flex items-center gap-1">
           <BedDoubleIcon :size="13" /> {{ property.bedrooms }} bed
         </span>
         <span class="flex items-center gap-1">

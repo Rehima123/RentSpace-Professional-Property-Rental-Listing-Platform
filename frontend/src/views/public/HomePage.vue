@@ -115,7 +115,12 @@
             :key="p.id"
             :to="{ name: 'property.show', params: { id: p.id } }"
           >
-            <PropertyCard :property="p" :show-favorite="auth.isAuthenticated" @toggle-favorite="toggleFavorite" />
+            <PropertyCard
+              :property="p"
+              :show-favorite="auth.isAuthenticated"
+              :is-favorited="favoriteIds.has(p.id)"
+              @toggle-favorite="toggleFavorite"
+            />
           </RouterLink>
         </div>
 
@@ -184,7 +189,6 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import {
   Search        as SearchIcon,
   ArrowRight    as ArrowRightIcon,
@@ -194,14 +198,12 @@ import {
   Building      as BuildingIcon,
   Store         as StoreIcon,
   Briefcase     as BriefcaseIcon,
-  Search        as SearchIcon2,
   MessageSquare as MessageSquareIcon,
   Key           as KeyIcon,
   Shield        as ShieldIcon,
   CheckCircle2  as CheckCircle2Icon,
   Banknote      as BanknoteIcon,
   Users         as UsersIcon,
-  MapPin        as MapPinIcon,
 } from 'lucide-vue-next'
 
 import PublicLayout   from '@/components/layout/PublicLayout.vue'
@@ -210,14 +212,16 @@ import EmptyState     from '@/components/ui/EmptyState.vue'
 import { usePropertyStore } from '@/stores/property.js'
 import { useAuthStore }     from '@/stores/auth.js'
 import favoriteService      from '@/services/favorite.js'
+import { useUiStore }       from '@/stores/ui.js'
 import { CITIES, PROPERTY_TYPES } from '@/utils/constants.js'
 
-const router = useRouter()
 const propertyStore = usePropertyStore()
 const auth          = useAuthStore()
+const ui            = useUiStore()
 
 const heroSearch = ref('')
 const heroCity   = ref('')
+const favoriteIds = ref(new Set())
 
 const stats = ref({ properties: 500, cities: 13, owners: 200 })
 
@@ -241,7 +245,7 @@ const ICON_MAP = {
 function getTypeIcon(type) { return ICON_MAP[type] ?? HomeIcon }
 
 const steps = [
-  { step: 1, icon: SearchIcon2, title: 'Search Properties', desc: 'Browse hundreds of verified listings across Ethiopian cities with powerful filters.' },
+  { step: 1, icon: SearchIcon, title: 'Search Properties', desc: 'Browse hundreds of verified listings across Ethiopian cities with powerful filters.' },
   { step: 2, icon: MessageSquareIcon, title: 'Send Inquiry', desc: 'Found your space? Send an inquiry directly to the property owner.' },
   { step: 3, icon: KeyIcon, title: 'Move In', desc: 'Owner accepts your inquiry and you coordinate the move-in details.' },
 ]
@@ -253,12 +257,31 @@ const features = [
   { icon: UsersIcon,        title: 'Trusted Community',     desc: 'Thousands of verified owners and tenants across Ethiopia.' },
 ]
 
+async function fetchFavorites() {
+  if (!auth.isAuthenticated) return
+  try {
+    const { data } = await favoriteService.list({ per_page: 100 })
+    favoriteIds.value = new Set(data.data.map(f => f.property?.id).filter(Boolean))
+  } catch { /* silent — favorites are non-critical on homepage */ }
+}
+
 async function toggleFavorite(propertyId) {
   if (!auth.isAuthenticated) return
-  await favoriteService.toggle(propertyId)
+  try {
+    const { data } = await favoriteService.toggle(propertyId)
+    if (data.favorited) {
+      favoriteIds.value.add(propertyId)
+      ui.success('Added to favorites')
+    } else {
+      favoriteIds.value.delete(propertyId)
+      ui.info('Removed from favorites')
+    }
+    favoriteIds.value = new Set(favoriteIds.value) // trigger reactivity
+  } catch { /* silent */ }
 }
 
 onMounted(() => {
   propertyStore.fetchFeatured()
+  fetchFavorites()
 })
 </script>

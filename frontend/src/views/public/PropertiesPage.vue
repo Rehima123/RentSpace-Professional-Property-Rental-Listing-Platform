@@ -224,6 +224,7 @@ const pagination  = ref(null)
 const loading     = ref(false)
 const viewMode    = ref('grid')
 const favoriteIds = ref(new Set())
+const dynamicCities = ref([]) // Loaded from API; falls back to constants
 
 const filters = reactive({
   search: '',
@@ -238,7 +239,12 @@ const filters = reactive({
   per_page: 12,
 })
 
-const cityOptions = computed(() => CITIES.map(c => ({ value: c, label: c })))
+const cityOptions = computed(() => {
+  const source = dynamicCities.value.length
+    ? dynamicCities.value.map(c => ({ value: c.city, label: `${c.city} (${c.properties_count})` }))
+    : CITIES.map(c => ({ value: c, label: c }))
+  return source
+})
 
 // Active filter chips for display
 const activeChips = computed(() => {
@@ -356,9 +362,17 @@ async function toggleFavorite(propertyId) {
   }
 }
 
+async function fetchCities() {
+  try {
+    const { data } = await propertyService.cities()
+    if (data.data?.length) dynamicCities.value = data.data
+  } catch { /* silent — fall back to static list */ }
+}
+
 onMounted(() => {
   loadFromUrl()
   fetchProperties()
   fetchFavorites()
+  fetchCities()
 })
 </script>
