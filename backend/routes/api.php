@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\InquiryController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\PropertyController;
 use Illuminate\Support\Facades\Route;
@@ -52,6 +54,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::put('/profile', [ProfileController::class, 'update']);
 
+    // Favorites (any authenticated user)
+    Route::get('/favorites', [FavoriteController::class, 'index']);
+    Route::post('/properties/{property}/favorite', [FavoriteController::class, 'toggle']);
+
+    // Inquiries — tenant sending
+    Route::middleware('role:tenant')->group(function () {
+        Route::get('/tenant/inquiries', [InquiryController::class, 'tenantIndex']);
+        Route::post('/properties/{property}/inquiries', [InquiryController::class, 'store']);
+    });
+
     /*
     |--------------------------------------------------------------------------
     | Owner Routes
@@ -64,6 +76,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/properties/{property}', [PropertyController::class, 'update'])->name('properties.update');
         Route::delete('/properties/{property}', [PropertyController::class, 'destroy'])->name('properties.destroy');
         Route::delete('/properties/{property}/images/{image}', [PropertyController::class, 'destroyImage'])->name('properties.images.destroy');
+
+        // Inquiry management
+        Route::get('/inquiries', [InquiryController::class, 'ownerIndex'])->name('inquiries.index');
+        Route::patch('/inquiries/{inquiry}/status', [InquiryController::class, 'updateStatus'])->name('inquiries.status');
     });
 
     /*
