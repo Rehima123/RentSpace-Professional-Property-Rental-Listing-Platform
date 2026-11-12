@@ -17,7 +17,7 @@ class ProfileController extends Controller
      */
     public function show(Request $request): JsonResponse
     {
-        return response()->json(new UserResource($request->user()));
+        return (new UserResource($request->user()))->response();
     }
 
     /**
@@ -45,6 +45,6 @@ class ProfileController extends Controller
 
         $user->update($data);
 
-        return response()->json(new UserResource($user));
+        return (new UserResource($user))->response();
     }
 }

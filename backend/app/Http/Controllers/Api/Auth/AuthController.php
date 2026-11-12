@@ -46,9 +46,13 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $request->session()->regenerate();
+        // Session regeneration is only available when session middleware is active.
+        // EnsureFrontendRequestsAreStateful will attach session for SPA requests.
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
 
-        return response()->json(new UserResource($request->user()));
+        return (new UserResource($request->user()))->response();
     }
 
     /**
@@ -58,8 +62,10 @@ class AuthController extends Controller
     {
         Auth::guard('web')->logout();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
         return response()->json(['message' => 'Logged out.']);
     }
@@ -69,6 +75,6 @@ class AuthController extends Controller
      */
     public function user(Request $request): JsonResponse
     {
-        return response()->json(new UserResource($request->user()));
+        return (new UserResource($request->user()))->response();
     }
 }
