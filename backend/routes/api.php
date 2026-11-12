@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AdminUserController;
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\InquiryController;
 use App\Http\Controllers\Api\ProfileController;
@@ -62,6 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:tenant')->group(function () {
         Route::get('/tenant/inquiries', [InquiryController::class, 'tenantIndex']);
         Route::post('/properties/{property}/inquiries', [InquiryController::class, 'store']);
+        Route::get('/tenant/dashboard', [DashboardController::class, 'tenant']);
     });
 
     /*
@@ -80,6 +83,9 @@ Route::middleware('auth:sanctum')->group(function () {
         // Inquiry management
         Route::get('/inquiries', [InquiryController::class, 'ownerIndex'])->name('inquiries.index');
         Route::patch('/inquiries/{inquiry}/status', [InquiryController::class, 'updateStatus'])->name('inquiries.status');
+
+        // Dashboard
+        Route::get('/dashboard', [DashboardController::class, 'owner'])->name('dashboard');
     });
 
     /*
@@ -90,5 +96,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         // Property approval
         Route::patch('/properties/{property}/status', [PropertyController::class, 'updateStatus'])->name('properties.status');
+
+        // Dashboard
+        Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
+
+        // User management
+        Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::patch('/users/{user}/status', [AdminUserController::class, 'updateStatus'])->name('users.status');
     });
 });
