@@ -34,9 +34,8 @@ export default {
   },
 
   update(id, formData) {
-    // FormData doesn't support PUT natively in some environments; use POST + _method
+    // Always POST for multipart form data (method spoofing not needed — we use a POST route)
     if (formData instanceof FormData) {
-      formData.append('_method', 'PUT')
       return api.post(`/api/owner/properties/${id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })

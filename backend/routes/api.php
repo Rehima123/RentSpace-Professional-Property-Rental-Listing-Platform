@@ -77,6 +77,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/properties', [PropertyController::class, 'ownerIndex'])->name('properties.index');
         Route::post('/properties', [PropertyController::class, 'store'])->name('properties.store');
         Route::put('/properties/{property}', [PropertyController::class, 'update'])->name('properties.update');
+        Route::post('/properties/{property}', [PropertyController::class, 'update'])->name('properties.update.post'); // FormData multipart workaround
         Route::delete('/properties/{property}', [PropertyController::class, 'destroy'])->name('properties.destroy');
         Route::delete('/properties/{property}/images/{image}', [PropertyController::class, 'destroyImage'])->name('properties.images.destroy');
 
@@ -94,7 +95,8 @@ Route::middleware('auth:sanctum')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
-        // Property approval
+        // Property approval + management (all statuses visible)
+        Route::get('/properties', [PropertyController::class, 'adminIndex'])->name('properties.index');
         Route::patch('/properties/{property}/status', [PropertyController::class, 'updateStatus'])->name('properties.status');
 
         // Dashboard

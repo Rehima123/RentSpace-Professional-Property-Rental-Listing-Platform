@@ -69,7 +69,8 @@ import BaseBadge   from '@/components/ui/BaseBadge.vue'
 import EmptyState  from '@/components/ui/EmptyState.vue'
 import Pagination  from '@/components/ui/Pagination.vue'
 import { Building2 as BuildingIcon, Search as SearchIcon, Check as CheckIcon, X as XIcon, Ban as BanIcon } from 'lucide-vue-next'
-import propertyService from '@/services/property.js'
+import propertyService  from '@/services/property.js'
+import dashboardService from '@/services/dashboard.js'
 import { useUiStore }  from '@/stores/ui.js'
 import { capitalize, formatPrice } from '@/utils/format.js'
 import { PROPERTY_STATUSES } from '@/utils/constants.js'
@@ -86,9 +87,7 @@ const statusOptions = PROPERTY_STATUSES
 async function fetch(page = 1) {
   loading.value = true
   try {
-    const { data } = await propertyService.list({ page, per_page: 20, search: search.value, status: statusFilter.value || undefined })
-    // For admin, we override the approved-only scope... but public endpoint only shows approved
-    // Admin sees all via admin dashboard data endpoint
+    const { data } = await dashboardService.adminProperties({ page, per_page: 20, search: search.value, status: statusFilter.value || undefined })
     properties.value = data.data
     pagination.value = data.meta
   } finally { loading.value = false }

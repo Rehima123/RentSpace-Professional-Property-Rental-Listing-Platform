@@ -16,6 +16,6 @@ export default {
 
   // Admin - property management
   adminProperties(params = {}) {
-    return api.get('/api/properties', { params })
+    return api.get('/api/admin/properties', { params })
   },
 }

@@ -263,6 +263,31 @@ class PropertyController extends Controller
 
     /*
     |--------------------------------------------------------------------------
+    | Admin: All Listings
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * GET /api/admin/properties
+     * Admin can see all properties regardless of status, with search + filter.
+     */
+    public function adminIndex(Request $request): AnonymousResourceCollection
+    {
+        $properties = Property::query()
+            ->with(['owner', 'images'])
+            ->withCount(['favorites', 'inquiries'])
+            ->when($request->search, fn ($q, $s) => $q->where('title', 'like', "%{$s}%")->orWhere('city', 'like', "%{$s}%"))
+            ->when($request->status, fn ($q, $v) => $q->where('status', $v))
+            ->when($request->type,   fn ($q, $v) => $q->where('type', $v))
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        return PropertyResource::collection($properties);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | Admin: Approval
     |--------------------------------------------------------------------------
     */
