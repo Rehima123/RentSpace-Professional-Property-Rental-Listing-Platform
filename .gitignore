@@ -1,0 +1,18 @@
+# Composer phar (checked in locally for convenience, not needed in repo)
+composer.phar
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Node modules (frontend - will be added in Phase 5)
+node_modules/
